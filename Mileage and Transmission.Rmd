@@ -13,12 +13,14 @@ library(dplyr)
 # Overview
 
 We at *Motor Trend* looked at a collection of cars and explored the relationship between a set of variables describing the car and miles per gallon that the car achieved. Particularly, we were interested in answering the following two questions:
-+ “Is an automatic or manual transmission better for MPG”
-+ "Quantify the MPG difference between automatic and manual transmissions"
 
-We found that 
-+
-+
+* “Is an automatic or manual transmission better for MPG”
+* "Quantify the MPG difference between automatic and manual transmissions"
+
+We found that:
+
+* Manual transmission provided better mileage than automatic mileage.
+* The difference in mileage between the two transmissions were around 7.2 miles per gallon. However, this huge difference was reduced by a lot when the number of cylinders in the car were also considered. It varied between 4 miles/gal for a 4 cylinder car, to about 0.2 miles/gal with 6 cylinders, to 0.6 miles/gal for 8. There was a further reduction of 0.04 miles/gal per unit gross horsepower when it was also considered.
 
 # Data
 
@@ -35,12 +37,12 @@ summary(cbind(mtcars[,-c(2,8:11)],
 
 We are interested in the how MPG, stored in the variable `mpg`, change with the transmission type, stored in the variable `am` as 0 for automatic, and 1 for manual. Let's look at a boxplot for the data.
 
-```{r boxplot, fig.width=3, fig.height=3}
+```{r boxplot, fig.width=4, fig.height=4}
 ggplot(mtcars) + geom_boxplot(aes(x=factor(am), y=mpg, fill=factor(am))) +
   labs(x="Transmission", fill="am", y="MPG") + theme(legend.position="none")
 ```
 
-This initial look at the data suggests that there is an obvious relationship between the transmission type of the automobile and miles per gallon that it achieves. We performed regression analysis to solidify our intuition with statistical significance.
+This initial look at the data suggests that manual transmission seems to be better. We performed regression analysis to solidify this exploratory observation with statistical significance.
 
 # Analysis
 
@@ -56,15 +58,27 @@ t.test(mpg~am,data=mtcars)
 
 To answer our second question of quantifying our result, we performed a regression analysis on `mpg` with `am` as a regressor. Our model was fairly robust as can be seen from the following diagnostic plots.
 
-```{r mdl1 plot, fig.width=5, fig.height=5}
+```{r mdl1 plot}
 par(mfcol=c(2,2))
 mdl1<-lm(mpg~factor(am),mtcars)
 plot(mdl1)
-mtext("Diagnostics for model mpg~am", side=3, outer=T, line=-16.5,cex=1.5)
 ```
 
 However, our model was only able to explain about a third of the variance in `mpg`, as is evidenced by the $R^2$ value of `r summary(mdl1)$r.squared`. Hence, we began adding more variables in our model to explain more of the variance, while also making sure that the results we obtained were significant.
 
+
+There were 4 variables which, when added to the model, raised the adjusted $R^2$ to above 70% - `cyl`,`disp`,`hp` and `wt`. These represented the number of cylinders, the displacement, the gross horsepower, and the weight of the automobile. After performing regression with different combinations of variables and also performing an Analysis of Deviance on those models, we made some interesting conclusions. 
+
+For instance, adding `wt` essentially rendered the transmission type useless, suggesting that mileage depends much more on the weight of the car than it does on its transmission type. However, the addition of `cyl` and `hp` to the regressor `am` was effective in increasing the effectiveness of our model.
+This model, which contained 3 regressors, was able to explain about 80% of the variance in `mpg`. The diagnostics plots are given below.
+
+```{r mdl_f}
+mdl_f<-lm(mpg~factor(am)+factor(cyl)+hp,mtcars)
+par(mfrow=c(2,2))
+plot(mdl_f)
+```
+
+# Appendix
 ```{r mdl2(am+)}
 mdl2<-list()
 for(i in c(2:8,10,11)){
@@ -74,6 +88,3 @@ for(i in c(2:8,10,11)){
     mdl2[[i]]<-lm(mpg~factor(am)+mtcars[,i],mtcars)
 }
 ```
-
-There were 4 variables which, when added to the model, raised the adjusted $R^2$ to above 70% - `cyl`,`disp`,`hp` and `wt`. These represented the number of cylinders, the displacement, the gross horsepower, and the weight of the automobile. After performing an Analysis of Deviance using different models(adding the variables in different order), we concluded that addition of `cyl`, `wt` and `hp` was effective in increasing the effectiveness of our model.
-Thus our final model contains 4 regressors.
