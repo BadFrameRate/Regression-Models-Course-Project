@@ -1,0 +1,24 @@
+---
+title: "Mileage and Transmission"
+author: "Aseem Rohatgi"
+date: "27/12/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=F)
+library(ggplot2)
+library(dplyr)
+```
+
+# Overview
+
+We at *Motor Trend* looked at a collection of cars and explored the relationship between a set of variables describing the car and miles per gallon that the car achieved. Particularly, we were interested in answering the following two questions:
++ “Is an automatic or manual transmission better for MPG”
++ "Quantify the MPG difference between automatic and manual transmissions"
+
+We found that 
++
++
+
+
