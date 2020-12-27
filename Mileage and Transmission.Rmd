@@ -6,8 +6,6 @@ output: pdf_document
 
 ```{r setup, include=F}
 knitr::opts_chunk$set(echo=F, fig.align="center")
-library(ggplot2)
-library(dplyr)
 ```
 
 # Overview
@@ -20,26 +18,17 @@ We at *Motor Trend* looked at a collection of cars and explored the relationship
 We found that:
 
 * Manual transmission provided better mileage than automatic mileage.
-* The difference in mileage between the two transmissions were around 7.2 miles per gallon. However, this huge difference was reduced by a lot when the number of cylinders in the car were also considered. It varied between 4 miles/gal for a 4 cylinder car, to about 0.2 miles/gal with 6 cylinders, to 0.6 miles/gal for 8. There was a further reduction of 0.04 miles/gal per unit gross horsepower when it was also considered.
+* The difference in mileage between the two transmissions were around 7.2 miles per gallon. However, this huge difference was reduced by a lot when the number of cylinders in the car were also considered.
+    + 4 cylinders, difference of 4.1 miles/gal
+    + 6 cylinders, difference of 0.2 miles/gal
+    + 8 cylinders, difference of 0.6 miles/gal
 
 # Data
 
-We used the data we collected on 32 automobiles('73 & '74 models). We have stored the data in a data frame called `mtcars`. Let's look at a summary of it.
+We used the data we collected on 32 automobiles('73 & '74 models). We have stored the data in a data frame called `mtcars`. We are interested in the how MPG, stored in the variable `mpg`, change with the transmission type, stored in the variable `am` as 0 for automatic, and 1 for manual. Let's look at a boxplot for the data.
 
-```{r summary}
-summary(cbind(mtcars[,-c(2,8:11)],
-              cyl=as.factor(mtcars[,2]),
-              vs=as.factor(mtcars[,8]),
-              am=as.factor(mtcars[,9]),
-              gear=as.factor(mtcars[,10]),
-              carb=as.factor(mtcars[,11])))
-```
-
-We are interested in the how MPG, stored in the variable `mpg`, change with the transmission type, stored in the variable `am` as 0 for automatic, and 1 for manual. Let's look at a boxplot for the data.
-
-```{r boxplot, fig.width=4, fig.height=4}
-ggplot(mtcars) + geom_boxplot(aes(x=factor(am), y=mpg, fill=factor(am))) +
-  labs(x="Transmission", fill="am", y="MPG") + theme(legend.position="none")
+```{r boxplot, fig.width=3, fig.height=3}
+boxplot(mpg~am,mtcars)
 ```
 
 This initial look at the data suggests that manual transmission seems to be better. We performed regression analysis to solidify this exploratory observation with statistical significance.
@@ -48,11 +37,11 @@ This initial look at the data suggests that manual transmission seems to be bett
 
 ## Assessing if there is a difference
 
-First, we performed a t-test to provide a solid statistical background to our observation of difference in mileage obtained from the two transmission types. The test provided a p-value of `r t.test(mpg~am,data=mtcars)$p.value`, suggesting a strong difference between the means of `mpg` under the two forms of transmission. Our estimates were `r t.test(mpg~am,data=mtcars)$estimate[1]` for automatic transmission, and `r t.test(mpg~am,data=mtcars)$estimate[2]` for manual(See Appendix for detailed code). Thus, we concluded that automobiles with a manual transmission provide a better mileage than those with an automatic transmission.
-
 ```{r t-test, include=F}
-t.test(mpg~am,data=mtcars)
+t<-t.test(mpg~am,data=mtcars)
 ```
+
+First, we performed a t-test to provide a solid statistical background to our observation of difference in mileage obtained from the two transmission types. The test provided a p-value of `r t$p.value`, suggesting a strong difference between the means of `mpg` under the two forms of transmission. Our estimates were `r t$estimate[1]` for automatic transmission, and `r t$estimate[2]` for manual(See Appendix for detailed code). Thus, we concluded that automobiles with a manual transmission provide a better mileage than those with an automatic transmission.
 
 ## Quantifying the difference
 
@@ -69,17 +58,32 @@ However, our model was only able to explain about a third of the variance in `mp
 
 There were 4 variables which, when added to the model, raised the adjusted $R^2$ to above 70% - `cyl`,`disp`,`hp` and `wt`. These represented the number of cylinders, the displacement, the gross horsepower, and the weight of the automobile. After performing regression with different combinations of variables and also performing an Analysis of Deviance on those models, we made some interesting conclusions. 
 
-For instance, adding `wt` essentially rendered the transmission type useless, suggesting that mileage depends much more on the weight of the car than it does on its transmission type. However, the addition of `cyl` and `hp` to the regressor `am` was effective in increasing the effectiveness of our model.
-This model, which contained 3 regressors, was able to explain about 80% of the variance in `mpg`. The diagnostics plots are given below.
+For instance, adding `wt` essentially rendered the transmission type useless, suggesting that mileage depends much more on the weight of the car than it does on its transmission type. `disp` did pretty much nothing when it was added at the end, leading us to drop it from our model. However, the addition of `cyl` and `hp` to the regressor `am` was effective in increasing the effectiveness of our model.
+This model, which contained 3 regressors, was able to explain about 80% of the variance in `mpg`(details in appendix). The diagnostics plots are given below.
 
-```{r mdl_f}
+```{r mdl_f plot}
 mdl_f<-lm(mpg~factor(am)+factor(cyl)+hp,mtcars)
 par(mfrow=c(2,2))
 plot(mdl_f)
 ```
 
 # Appendix
-```{r mdl2(am+)}
+
+1. Boxplot
+```{r boxplot, eval=F, echo=T}
+```
+2. t-test
+```{r t-test, eval=F, echo=T}
+```
+3. Diagnostic plots for first model
+```{r mdl1 plot, eval=F, echo=T}
+```
+4. First model summary
+```{r mdl1 summary, echo=T}
+summary(mdl1)
+```
+5. Considering addition of different variables was first done by adding one variable. The models are stored in a list and can be summarized using `lapply(mdl2,summarise)`.
+```{r mdl2, eval=F, echo=T}
 mdl2<-list()
 for(i in c(2:8,10,11)){
   if(i %in% c(2,8,10,11))
@@ -87,4 +91,17 @@ for(i in c(2:8,10,11)){
   else 
     mdl2[[i]]<-lm(mpg~factor(am)+mtcars[,i],mtcars)
 }
+```
+After this, comparison of models using different combinations of the chosen variables was performed using Analysis of Deviance. For example,
+```{r anova, eval=F, echo=T}
+anova(lm(mpg~factor(am),mtcars),
+      lm(mpg~factor(am)+factor(cyl),mtcars),
+      lm(mpg~factor(am)+factor(cyl)+hp,mtcars))
+```
+6. Diagnostic plots for the final model
+```{r mdl_f plot, eval=F, echo=T}
+```
+7. Final model summary
+```{r mdl_f summary, echo=T}
+summary(mdl_f)
 ```
