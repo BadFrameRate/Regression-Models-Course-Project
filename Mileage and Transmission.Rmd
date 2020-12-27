@@ -60,14 +60,20 @@ To answer our second question of quantifying our result, we performed a regressi
 par(mfcol=c(2,2))
 mdl1<-lm(mpg~factor(am),mtcars)
 plot(mdl1)
+mtext("Diagnostics for model mpg~am", side=3, outer=T, line=-16.5,cex=1.5)
 ```
 
+However, our model was only able to explain about a third of the variance in `mpg`, as is evidenced by the $R^2$ value of `r summary(mdl1)$r.squared`. Hence, we began adding more variables in our model to explain more of the variance, while also making sure that the results we obtained were significant.
 
-
-```{r var corr}
+```{r mdl2(am+)}
 mdl2<-list()
 for(i in c(2:8,10,11)){
-  if(i %in% c(2,8,10,11)) mdl2[[i]]<-lm(mpg~factor(am)+factor(mtcars[,i]),mtcars)
-  else mdl2[[i]]<-lm(mpg~factor(am)+mtcars[,i],mtcars)
+  if(i %in% c(2,8,10,11))
+    mdl2[[i]]<-lm(mpg~factor(am)+factor(mtcars[,i]),mtcars)
+  else 
+    mdl2[[i]]<-lm(mpg~factor(am)+mtcars[,i],mtcars)
 }
 ```
+
+There were 4 variables which, when added to the model, raised the adjusted $R^2$ to above 70% - `cyl`,`disp`,`hp` and `wt`. These represented the number of cylinders, the displacement, the gross horsepower, and the weight of the automobile. After performing an Analysis of Deviance using different models(adding the variables in different order), we concluded that addition of `cyl`, `wt` and `hp` was effective in increasing the effectiveness of our model.
+Thus our final model contains 4 regressors.
