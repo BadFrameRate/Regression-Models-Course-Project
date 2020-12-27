@@ -1,12 +1,11 @@
 ---
 title: "Mileage and Transmission"
 author: "Aseem Rohatgi"
-date: "27/12/2020"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=F)
+knitr::opts_chunk$set(echo=F, fig.align="center", fig.width=4, fig.height=4)
 library(ggplot2)
 library(dplyr)
 ```
@@ -21,4 +20,23 @@ We found that
 +
 +
 
+# Data
 
+We used the data we collected on 32 automobiles('73 & '74 models). We have stored the data in a data frame called `mtcars`. Let's look at a summary of it.
+
+```{r summary}
+summary(cbind(mtcars[,-(8:9)],
+              vs=as.factor(mtcars[,8]),
+              am=as.factor(mtcars[,9])))
+```
+
+We are interested in the how MPG, stored in the variable `mpg`, change with the transmission type, stored in the variable `am` as 0 for automatic, and 1 for manual. Let's look at a boxplot for the data.
+
+```{r boxplot, fig.width=3, fig.height=3}
+ggplot(mtcars) + geom_boxplot(aes(x=factor(am), y=mpg, fill=factor(am))) +
+  labs(x="Transmission", fill="am", y="MPG") + theme(legend.position="none")
+```
+
+This initial look at the data suggests that there is an obvious relationship between the transmission type of the automobile and miles per gallon that it achieves. We performed regression analysis to solidify our intuition with statistical significance.
+
+# 
